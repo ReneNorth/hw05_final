@@ -1,5 +1,5 @@
 from django.shortcuts import render, get_object_or_404, redirect
-from .models import Post, Group, Follow
+from .models import Post, Group, Comment, Follow
 from .forms import PostForm, CommentForm
 from yatube.settings import DEF_NUM_POSTS
 from django.contrib.auth.decorators import login_required
@@ -42,26 +42,35 @@ def profile(request, username):
     author = get_object_or_404(User, username=username)
     post_list = author.posts.all().select_related('group')
     page_obj = paginator(post_list, request)
-    if request.user.is_authenticated and username != request.user.username:
-        check = Follow.objects.all().filter(
-            user_id=request.user,
-            author_id=author
-        )
-        if not check:
-            follow = False
-        else:
-            follow = True
+    if request.user.id == author.id:
         context = {
             'page_obj': page_obj,
             'author': author,
-            'following': follow,
+            'failed': 'Нельзя подписаться на самого себя!',
         }
         return render(request, 'posts/profile.html', context)
-    context = {
-        'page_obj': page_obj,
-        'author': author,
-    }
-    return render(request, 'posts/profile.html', context)
+    else:
+        if request.user.is_authenticated:
+            check = Follow.objects.all().filter(
+                user_id=request.user,
+                author_id=author
+            )
+            if not check:
+                follow = False
+            else:
+                follow = True
+            context = {
+                'page_obj': page_obj,
+                'author': author,
+                'following': follow,
+            }
+            return render(request, 'posts/profile.html', context)
+        context = {
+            'page_obj': page_obj,
+            'author': author,
+            'failed': 'failed',
+        }
+        return render(request, 'posts/profile.html', context)
 
 
 def post_detail(request, post_id):
@@ -141,10 +150,13 @@ def follow_index(request):
 
 @login_required
 def profile_follow(request, username):
-    following_author = get_object_or_404(User, username=username)
-    new_follower = Follow(user=request.user, author=following_author)
-    new_follower.save()
-    return redirect('posts:profile', username=following_author)
+    author = get_object_or_404(User, username=username)
+    if request.user.id != author.id and not Follow.objects.all().filter(
+            user=request.user,
+            author=author
+    ):
+        Follow.objects.create(user=request.user, author=author)
+    return redirect('posts:profile', username=username)
 
 
 @login_required

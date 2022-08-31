@@ -53,7 +53,7 @@ class Post(models.Model):
 
 
 class Comment(models.Model):
-    text = models.CharField(
+    text = models.TextField(
         max_length=300,
         verbose_name='Комментарий',
     )
@@ -94,3 +94,8 @@ class Follow(models.Model):
         on_delete=models.CASCADE,
         related_name='following'
     )
+
+    class Meta:
+        models.UniqueConstraint(
+            fields=['user', 'author'], name='already_following'
+        )

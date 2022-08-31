@@ -2,7 +2,7 @@
 {% load thumbnail %}
 {% block title %} Профайл пользователя {{ author.get_full_name }} {% endblock %}
 {% block content %}
-    <main>   
+    <main>
       <div class="container py-5">        
         <h1>Все посты пользователя {{ post.author.get_full_name }} </h1>
         <h3>Всего постов: {{ author.posts.count }} </h3>
@@ -21,6 +21,7 @@
             Подписаться
           </a>
         {% endif %}
+        {{ failed }}
         {% for post in page_obj %}   
         <article>  
           <ul>
