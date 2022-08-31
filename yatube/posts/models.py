@@ -42,7 +42,6 @@ class Post(models.Model):
         upload_to='posts/',
         blank=True
     )
-    
 
     def __str__(self):
         return self.text[:15]
@@ -51,6 +50,7 @@ class Post(models.Model):
         ordering = ['-pub_date']
         verbose_name = 'Пост'
         verbose_name = 'Посты'
+
 
 class Comment(models.Model):
     text = models.CharField(
@@ -79,7 +79,7 @@ class Comment(models.Model):
         ordering = ['-created']
         verbose_name = 'Комментарий'
         verbose_name = 'Комментарии'
-        
+
 
 class Follow(models.Model):
     user = models.ForeignKey(
@@ -89,7 +89,7 @@ class Follow(models.Model):
 
     )
 
-    author = models.ForeignKey(   #ссылка на объект пользователя, на которого подписываются
+    author = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
         related_name='following'

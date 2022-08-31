@@ -4,12 +4,9 @@ from posts.models import Post, Group, Follow
 from django.urls import reverse
 from django.conf import settings
 from django import forms
-import shutil
 import tempfile
 from django.core.files.uploadedfile import SimpleUploadedFile
-from django.views.decorators.cache import cache_page
 from django.core.cache import cache
-from django.shortcuts import get_object_or_404
 
 
 User = get_user_model()

@@ -1,6 +1,5 @@
 from django.test import TestCase, Client
 from http import HTTPStatus
-from django.urls import reverse
 
 
 class ViewTestClass(TestCase):
