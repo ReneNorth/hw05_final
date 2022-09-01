@@ -1,12 +1,14 @@
+import tempfile
+
+from django import forms
 from django.contrib.auth import get_user_model
-from django.test import TestCase, Client, override_settings
-from posts.models import Post, Group, Follow
 from django.urls import reverse
 from django.conf import settings
-from django import forms
-import tempfile
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.core.cache import cache
+
+from posts.models import Post, Group, Follow
+from django.test import TestCase, Client, override_settings
 
 
 User = get_user_model()
@@ -256,26 +258,36 @@ class PostViewsTest(TestCase):
         )
         self.assertEqual(len(response.context['page_obj']), posts_second_page)
 
-    def test_subscribe_unsubscribe(self):
+    def test_subscribe(self):
         """ VIEWS | Тестируем подписку """
-        followers_num_0 = 0
         self.authorized_client.get(
             reverse(
                 'posts:profile_follow',
                 kwargs={'username': self.user2.username})
         )
-        self.assertEqual(len(
-            Follow.objects.all().filter(user_id=self.user)
-        ), followers_num_0 + num_objects_created)
+        self.assertTrue(Follow.objects.all().filter(
+            user_id=self.user,
+            author_id=self.user2
+        ).exists()
+        )
 
+    def test_unsubscribe(self):
+        """ VIEWS | Тестируем отписку """
+        self.authorized_client.get(
+            reverse(
+                'posts:profile_follow',
+                kwargs={'username': self.user2.username})
+        )
         self.authorized_client.get(
             reverse(
                 'posts:profile_unfollow',
                 kwargs={'username': self.user2.username})
         )
-        self.assertEqual(len(
-            Follow.objects.all().filter(user_id=self.user)
-        ), followers_num_0)
+        self.assertFalse(Follow.objects.all().filter(
+            user_id=self.user,
+            author_id=self.user2
+        ).exists()
+        )
 
     def test_follow_feed(self):
         """ VIEWS | На странице подписок корректное количество постов """
@@ -295,7 +307,10 @@ class PostViewsTest(TestCase):
 
         # Проверяем, что подписались успешно
         self.assertEqual(len(
-            Follow.objects.all().filter(user_id=self.user)
+            Follow.objects.all().filter(
+                user_id=self.user,
+                author_id=self.user2
+            )
         ), followers_num_0 + num_objects_created)
 
         # Проверяем, что в фиде подписок один пост
@@ -314,7 +329,7 @@ class PostViewsTest(TestCase):
                 kwargs={'username': self.user2.username})
         )
 
-        # Проверяем, что в фид подписок пустой
+        # Проверяем, что фид подписок пустой
         response = self.authorized_client.get(
             reverse('posts:follow_index')
         )

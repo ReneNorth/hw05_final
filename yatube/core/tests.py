@@ -1,5 +1,6 @@
-from django.test import TestCase, Client
 from http import HTTPStatus
+
+from django.test import TestCase, Client
 
 
 class ViewTestClass(TestCase):

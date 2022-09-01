@@ -1,11 +1,12 @@
 from django.shortcuts import render, get_object_or_404, redirect
-from .models import Post, Group, Follow
-from .forms import PostForm, CommentForm
-from yatube.settings import DEF_NUM_POSTS
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
 from django.contrib.auth import get_user_model
 from django.views.decorators.cache import cache_page
+
+from .models import Post, Group, Follow
+from .forms import PostForm, CommentForm
+from yatube.settings import DEF_NUM_POSTS
 
 
 User = get_user_model()
