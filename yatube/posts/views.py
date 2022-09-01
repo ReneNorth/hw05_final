@@ -1,21 +1,15 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
-from django.core.paginator import Paginator
+
 from django.contrib.auth import get_user_model
 from django.views.decorators.cache import cache_page
 
 from .models import Post, Group, Follow
 from .forms import PostForm, CommentForm
-from yatube.settings import DEF_NUM_POSTS
+from .utils import paginator
 
 
 User = get_user_model()
-
-
-def paginator(list_of_posts, request):
-    paginator = Paginator(list_of_posts, DEF_NUM_POSTS)
-    page_number = request.GET.get('page')
-    return paginator.get_page(page_number)
 
 
 @cache_page(1 * 20, key_prefix='index_page')
@@ -43,35 +37,30 @@ def profile(request, username):
     author = get_object_or_404(User, username=username)
     post_list = author.posts.all().select_related('group')
     page_obj = paginator(post_list, request)
-    if request.user.id == author.id:
-        context = {
-            'page_obj': page_obj,
-            'author': author,
-            'failed': 'Нельзя подписаться на самого себя!',
-        }
-        return render(request, 'posts/profile.html', context)
-    else:
-        if request.user.is_authenticated:
-            check = Follow.objects.all().filter(
+    if request.user.is_authenticated:
+        if request.user.id == author.id:
+            failed_message = 'Нельзя подписаться на самого себя!'
+            follow = None
+        else:
+            check = Follow.objects.filter(
                 user_id=request.user,
                 author_id=author
-            )
+            ).exists()
+            failed_message = None
             if not check:
                 follow = False
             else:
                 follow = True
-            context = {
-                'page_obj': page_obj,
-                'author': author,
-                'following': follow,
-            }
-            return render(request, 'posts/profile.html', context)
-        context = {
-            'page_obj': page_obj,
-            'author': author,
-            'failed': 'failed',
-        }
-        return render(request, 'posts/profile.html', context)
+    else:
+        failed_message = 'Сначала регистрация! :)'
+        follow = None
+    context = {
+        'page_obj': page_obj,
+        'author': author,
+        'following': follow,
+        'failed': failed_message,
+    }
+    return render(request, 'posts/profile.html', context)
 
 
 def post_detail(request, post_id):
@@ -152,16 +141,17 @@ def follow_index(request):
 @login_required
 def profile_follow(request, username):
     author = get_object_or_404(User, username=username)
-    if request.user.id != author.id and not Follow.objects.all().filter(
-            user=request.user,
-            author=author
-    ):
-        Follow.objects.create(user=request.user, author=author)
+    if request.user.id != author.id:
+        Follow.objects.get_or_create(user=request.user, author=author)
     return redirect('posts:profile', username=username)
 
 
 @login_required
 def profile_unfollow(request, username):
     unfollowing_author = get_object_or_404(User, username=username)
-    Follow.objects.get(user=request.user, author=unfollowing_author).delete()
+    get_object_or_404(
+        Follow,
+        user=request.user,
+        author=unfollowing_author
+    ).delete()
     return redirect('posts:profile', username=unfollowing_author)

@@ -21,7 +21,7 @@
             Подписаться
           </a>
         {% endif %}
-        {{ failed }}
+        {{ failed|default_if_none:'' }}
         {% for post in page_obj %}   
         <article>  
           <ul>
