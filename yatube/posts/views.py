@@ -37,20 +37,16 @@ def profile(request, username):
     author = get_object_or_404(User, username=username)
     post_list = author.posts.all().select_related('group')
     page_obj = paginator(post_list, request)
+    failed_message = None
     if request.user.is_authenticated:
         if request.user.id == author.id:
             failed_message = 'Нельзя подписаться на самого себя!'
             follow = None
         else:
-            check = Follow.objects.filter(
+            follow = Follow.objects.filter(
                 user_id=request.user,
                 author_id=author
             ).exists()
-            failed_message = None
-            if not check:
-                follow = False
-            else:
-                follow = True
     else:
         failed_message = 'Сначала регистрация! :)'
         follow = None
