@@ -1,12 +1,14 @@
-from django.shortcuts import render, get_object_or_404, redirect
-from django.contrib.auth.decorators import login_required
+import requests
 from django.contrib.auth import get_user_model
+from django.contrib.auth.decorators import login_required
+from django.http import JsonResponse
+from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.cache import cache_page
 
-from .models import Post, Group, Follow
-from .forms import PostForm, CommentForm
+from .forms import CommentForm, PostForm
+from .models import Follow, Group, Post
+from .serializers import PostSerializer
 from .utils import paginator
-
 
 User = get_user_model()
 
@@ -150,3 +152,10 @@ def profile_unfollow(request, username):
         author=unfollowing_author
     ).delete()
     return redirect('posts:profile', username=unfollowing_author)
+
+
+def get_post(request, pk: int):
+    if request.method == 'GET':
+        post = get_object_or_404(Post, pk=pk)
+        serializer = PostSerializer(post)
+        return JsonResponse(serializer.data)

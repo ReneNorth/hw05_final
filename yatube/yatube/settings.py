@@ -13,6 +13,10 @@ ALLOWED_HOSTS = [
     'testserver',
 ]
 
+INTERNAL_IPS = [
+    '127.0.0.1',
+]
+
 # DEF_NUM_POSTS defines the limit of displayed posts
 DEF_NUM_POSTS = 10
 
@@ -41,6 +45,8 @@ INSTALLED_APPS = [
     'core.apps.CoreConfig',
     'about.apps.AboutConfig',
     'sorl.thumbnail',
+    'debug_toolbar',
+    'rest_framework',
 ]
 
 MIDDLEWARE = [
@@ -51,6 +57,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'debug_toolbar.middleware.DebugToolbarMiddleware',
 ]
 
 ROOT_URLCONF = 'yatube.urls'

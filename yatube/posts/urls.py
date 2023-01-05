@@ -27,4 +27,5 @@ urlpatterns = [
         views.profile_unfollow,
         name='profile_unfollow'
     ),
+    path('api/v1/posts/<int:pk>/', views.get_post, name='post_ser'),
 ]
